@@ -10,12 +10,22 @@ st.title("☁ Cloud-Based Student Assignment Management System")
 # ----------------------------
 # Fetch files FIRST
 # ----------------------------
-files = get_files()
+try:
+    files = get_files()
+except Exception as e:
+    st.error(f"Failed to fetch files from S3: {e}")
+    files = []
 
 if files:
     df = pd.DataFrame(files)
 else:
     df = pd.DataFrame(columns=["Filename", "Size", "LastModified"])
+
+# Make sure Size is always numeric so .sum() / charts never crash
+if "Size" in df.columns:
+    df["Size"] = pd.to_numeric(df["Size"], errors="coerce").fillna(0)
+else:
+    df["Size"] = 0
 
 # ----------------------------
 # Sidebar
@@ -25,7 +35,6 @@ with st.sidebar:
         "https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg",
         width=120
     )
-
     st.markdown("---")
     st.write("Cloud Storage Portal")
 
@@ -34,7 +43,6 @@ with st.sidebar:
 # ----------------------------
 st.markdown("""
 <style>
-
 [data-testid="stMetric"]{
     background-color:#262730;
     border:1px solid #404040;
@@ -42,19 +50,16 @@ st.markdown("""
     border-radius:15px;
     text-align:center;
 }
-
 [data-testid="stMetricLabel"]{
     color:white !important;
     font-size:18px !important;
     font-weight:600 !important;
 }
-
 [data-testid="stMetricValue"]{
     color:#4CAF50 !important;
     font-size:40px !important;
     font-weight:bold !important;
 }
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -79,59 +84,36 @@ Store, manage and analyze files securely using Amazon S3.
 # Dashboard Metrics
 # ----------------------------
 total_files = len(df)
-
-total_storage_mb = (
-    df["Size"].sum() / (1024 * 1024)
-    if not df.empty else 0
-)
+total_storage_mb = df["Size"].sum() / (1024 * 1024) if not df.empty else 0
 
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    st.metric(
-        "Files Stored",
-        total_files
-    )
+    st.metric("Files Stored", total_files)
 
 with col2:
-    st.metric(
-        "Cloud Provider",
-        "AWS"
-    )
+    st.metric("Cloud Provider", "AWS")
 
 with col3:
-    st.markdown(f"""
-    <div style="
-        background:#262730;
-        border:1px solid #404040;
-        border-radius:15px;
-        padding:20px;
-        text-align:center;
-    ">
-        <div style="
-            color:white;
-            font-size:18px;
-            font-weight:600;
-            margin-bottom:10px;
-        ">
-            Region
-        </div>
-
-        <div style="
-            color:#4CAF50;
-            font-size:24px;
-            font-weight:bold;
-        ">
-            Singapore
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    # NOTE: this HTML must be flush-left (no leading indentation).
+    # Streamlit's markdown renderer treats 4+ leading spaces on a line
+    # as a Markdown code block, which silently breaks unsafe_allow_html
+    # rendering (this was the bug causing raw HTML to show as text).
+    st.markdown(
+        '<div style="background:#262730;border:1px solid #404040;'
+        'border-radius:15px;padding:20px;text-align:center;">'
+        '<div style="color:white;font-size:18px;font-weight:600;'
+        'margin-bottom:10px;">Region</div>'
+        '<div style="color:#4CAF50;font-size:24px;font-weight:bold;">'
+        'Singapore</div>'
+        '</div>',
+        unsafe_allow_html=True
+    )
 
 # ----------------------------
 # Chart
 # ----------------------------
-if not df.empty:
-
+if not df.empty and df["Size"].sum() > 0:
     fig = px.bar(
         df,
         x="Filename",
@@ -139,21 +121,14 @@ if not df.empty:
         color="Size",
         title="Storage Usage by File"
     )
-
-    st.plotly_chart(
-        fig,
-        use_container_width=True
-    )
-
+    st.plotly_chart(fig, use_container_width=True)
 else:
-
     st.info("No files found in your S3 bucket.")
 
 # ----------------------------
 # Architecture
 # ----------------------------
 st.divider()
-
 st.subheader("System Architecture")
 
 st.code("""
@@ -176,16 +151,10 @@ st.divider()
 col1, col2 = st.columns(2)
 
 with col1:
-    st.metric(
-        "Total Files",
-        total_files
-    )
+    st.metric("Total Files", total_files)
 
 with col2:
-    st.metric(
-        "Total Storage",
-        f"{total_storage_mb:.2f} MB"
-    )
+    st.metric("Total Storage", f"{total_storage_mb:.2f} MB")
 
 # ----------------------------
 # File Table
@@ -193,12 +162,6 @@ with col2:
 st.subheader("Files Stored in Amazon S3")
 
 if not df.empty:
-
-    st.dataframe(
-        df,
-        use_container_width=True
-    )
-
+    st.dataframe(df, use_container_width=True)
 else:
-
     st.warning("No files uploaded yet.")
