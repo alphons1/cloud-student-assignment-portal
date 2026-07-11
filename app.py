@@ -14,7 +14,7 @@ st.title("☁️ My Cloud Portal")
 st.markdown("""
 ### Welcome to My Cloud Based Student Assignment Management System
 
-Manage your assignments securely using **Amazon Web Services (AWS)**.
+Manage your files securely using **Amazon Web Services (AWS)**.
 
 My platform demonstrates how cloud technologies can be used to upload,
 store and manage files through a modern web application.
@@ -22,8 +22,7 @@ store and manage files through a modern web application.
 #### Features
 
 - ☁️ Secure cloud storage with Amazon S3
-- 🔒 Identity & Access Management (AWS IAM)
-- 📤 Upload assignments instantly
+- 📤 Upload files instantly
 - 📊 View file statistics and storage usage
 - 🐍 Built with Python & Streamlit
 
