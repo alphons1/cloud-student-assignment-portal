@@ -12,11 +12,11 @@ st.set_page_config(
 st.title("☁️ My Cloud Portal")
 
 st.markdown("""
-### Welcome to the Cloud-Based Student Assignment Management System
+### Welcome to My Cloud Based Student Assignment Management System
 
 Manage your assignments securely using **Amazon Web Services (AWS)**.
 
-This platform demonstrates how cloud technologies can be used to upload,
+My platform demonstrates how cloud technologies can be used to upload,
 store and manage files through a modern web application.
 
 #### Features
